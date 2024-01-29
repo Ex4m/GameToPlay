@@ -26,10 +26,10 @@ class GamesStorage:
             print(f"{game_name} - {rank}")
 
     def generate_rank_list(self):
-        for i, game in enumerate(self.games_list, start=1):
-            game.set_rank(i)
-            self.rank_list[game.name] = game.rank
         self.remaining_numbers = list(range(1, len(self.games_list) + 1))
+        for game in self.games_list:
+            game.set_rank(self.get_uniq_random_num())
+            self.rank_list[game.name] = game.rank
 
     def get_uniq_random_num(self):
         if not self.remaining_numbers:
