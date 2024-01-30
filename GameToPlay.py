@@ -7,6 +7,7 @@ class GamesStorage:
     def __init__(self) -> None:
         self.games_list = []
         self.rank_list = {}
+        self.lottery_list = []
 
     def add_game(self, *gameNames):
         for gameName in gameNames:
@@ -40,7 +41,24 @@ class GamesStorage:
         return random_number
 
     def what_we_should_play_tonight(self):
-        pass
+        if not self.lottery_list:
+            self.refresh_lottery_list()
+
+        selected_game = random.choice(self.lottery_list)
+        selected_game_name = selected_game['name']
+        selected_game_value = selected_game['value']
+
+        # Snížení hodnoty a posunutí na konec seznamu
+        selected_game_value -= 1
+        self.lottery_list.remove(selected_game)
+        self.lottery_list.append(
+            {'name': selected_game_name, 'value': selected_game_value})
+
+        return selected_game_name
+
+    def refresh_lottery_list(self):
+        self.lottery_list = [{'name': game.name, 'value': game.rank}
+                             for game in self.games_list]
 
 
 class Game:
