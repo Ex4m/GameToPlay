@@ -3,7 +3,17 @@
 import random
 
 
-class GamesStorage:
+class SingletonMeta(type):
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            instance = super().__call__(*args, **kwargs)
+            cls._instances[cls] = instance
+        return cls._instances[cls]
+
+
+class GamesStorage(metaclass=SingletonMeta):
     def __init__(self) -> None:
         self.games_list = []
         self.rank_list = {}
@@ -26,6 +36,10 @@ class GamesStorage:
         for game_name, rank in self.rank_list.items():
             print(f"{game_name} - {rank}")
 
+    def show_lottery_list(self):
+        for game in self.lottery_list:
+            print(game)
+
     def generate_rank_list(self):
         self.remaining_numbers = list(range(1, len(self.games_list) + 1))
         for game in self.games_list:
@@ -41,24 +55,34 @@ class GamesStorage:
         return random_number
 
     def what_we_should_play_tonight(self):
-        if not self.lottery_list:
-            self.refresh_lottery_list()
-
+        self.populate_lottery_list()
+        self.show_lottery_list()
         selected_game = random.choice(self.lottery_list)
-        selected_game_name = selected_game['name']
-        selected_game_value = selected_game['value']
+        self.lottery_list = [
+            x for x in self.lottery_list if x != selected_game]
 
-        # Snížení hodnoty a posunutí na konec seznamu
-        selected_game_value -= 1
-        self.lottery_list.remove(selected_game)
-        self.lottery_list.append(
-            {'name': selected_game_name, 'value': selected_game_value})
+        for game in self.lottery_list:
+            if game['name'] != selected_game['name']:
+                self.lottery_list.append(game['name'])
 
-        return selected_game_name
+        print("\nRefreshed rank list")
+        self.show_lottery_list()
+        return selected_game['name']
 
-    def refresh_lottery_list(self):
-        self.lottery_list = [{'name': game.name, 'value': game.rank}
-                             for game in self.games_list]
+    def pick_from_lottery(self):
+        pass
+
+    def populate_lottery_list(self):
+        for game in self.rank_list:
+            for i in range(1, self.rank_list[game]):
+                self.lottery_list.append(game)
+
+        return self.lottery_list
+
+    def show_lottery_list(self):
+        print("Lottery List:")
+        for game in self.lottery_list:
+            print(f"Name: {game['name']}, Rank: {game['rank']}")
 
 
 class Game:
@@ -85,3 +109,7 @@ print("Seznam her:")
 g.show_list()
 print("\nRank list:")
 g.show_rank_list()
+
+print("------------")
+# g.what_we_should_play_tonight()
+g.populate_lottery_list()
