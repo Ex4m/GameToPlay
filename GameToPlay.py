@@ -70,14 +70,15 @@ class GamesStorage(metaclass=SingletonMeta):
         selected_game = self.pick_from_lottery()
         print("\nRefreshed lottery list")
         self.show_lottery_list()
-        return selected_game['name']
+        return selected_game
 
     def pick_from_lottery(self):
         picked_game = random.choice(self.lottery_list)
-        for game in self.lottery_list:
-            self.lottery_list.append(game)
-        self.lottery_list = [x for x in self.lottery_list if x ==
-                             picked_game] + [x for x in self.lottery_list if x != picked_game]
+        unique_lot = set(self.lottery_list)
+        self.lottery_list.extend(unique_lot)
+        # remove all the copies from the list and adds exactly 1
+        self.lottery_list = [x for x in self.lottery_list if x != picked_game]
+        self.lottery_list.append(picked_game)
         return picked_game
 
     def populate_lottery_list(self):
@@ -114,4 +115,6 @@ print("\nRank list:")
 g.show_rank_list()
 
 print("------------")
-# g.what_we_should_play_tonight()
+g.what_we_should_play_tonight()
+
+# %%
