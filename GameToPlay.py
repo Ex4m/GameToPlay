@@ -19,6 +19,14 @@ class GamesStorage(metaclass=SingletonMeta):
         self.rank_list = {}
         self.lottery_list = []
 
+    def display_wrapped(func):
+        def wrapper(self, *args, **kwargs):
+            print("**************************")
+            result = func(self, *args, **kwargs)
+            print("**************************")
+            return result
+        return wrapper
+
     def add_game(self, *gameNames):
         for gameName in gameNames:
             game = Game(gameName)
@@ -36,6 +44,7 @@ class GamesStorage(metaclass=SingletonMeta):
         for game_name, rank in self.rank_list.items():
             print(f"{game_name} - {rank}")
 
+    @display_wrapped
     def show_lottery_list(self):
         for game in self.lottery_list:
             print(game)
@@ -55,34 +64,28 @@ class GamesStorage(metaclass=SingletonMeta):
         return random_number
 
     def what_we_should_play_tonight(self):
-        self.populate_lottery_list()
+        if not self.lottery_list:
+            self.populate_lottery_list()
         self.show_lottery_list()
-        selected_game = random.choice(self.lottery_list)
-        self.lottery_list = [
-            x for x in self.lottery_list if x != selected_game]
-
-        for game in self.lottery_list:
-            if game['name'] != selected_game['name']:
-                self.lottery_list.append(game['name'])
-
-        print("\nRefreshed rank list")
+        selected_game = self.pick_from_lottery()
+        print("\nRefreshed lottery list")
         self.show_lottery_list()
         return selected_game['name']
 
     def pick_from_lottery(self):
-        pass
+        picked_game = random.choice(self.lottery_list)
+        for game in self.lottery_list:
+            self.lottery_list.append(game)
+        self.lottery_list = [x for x in self.lottery_list if x ==
+                             picked_game] + [x for x in self.lottery_list if x != picked_game]
+        return picked_game
 
     def populate_lottery_list(self):
         for game in self.rank_list:
-            for i in range(1, self.rank_list[game]):
+            for i in range(1, self.rank_list[game]+1):
                 self.lottery_list.append(game)
 
         return self.lottery_list
-
-    def show_lottery_list(self):
-        print("Lottery List:")
-        for game in self.lottery_list:
-            print(f"Name: {game['name']}, Rank: {game['rank']}")
 
 
 class Game:
@@ -112,4 +115,3 @@ g.show_rank_list()
 
 print("------------")
 # g.what_we_should_play_tonight()
-g.populate_lottery_list()
